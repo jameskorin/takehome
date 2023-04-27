@@ -14,6 +14,10 @@ export default function Invoices() {
         getInvoices();
     },[])
 
+    useEffect(() => {
+        console.log(invoices.filter(e => e.status === 'draft'));
+    },[invoices])
+
     const getInvoices =async ()=> {
         setInvoices((await axios.get('https://takehome.api.bidsight.io/v2/invoices')).data);
     }
@@ -22,15 +26,17 @@ export default function Invoices() {
         setInvoices(invoices.concat([invoice]));
     }
 
-    let displayInvoices = invoices;
+    const d = new Date();
+    let displayInvoices = invoices.sort((a,b) => 
+        a.due_date === "" ? -1 :(
+        (new Date(a.due_date)) > (new Date(b.due_date))
+    ? -1 : 1));
     
     // Search by name
     if(search !== '')
         displayInvoices = invoices.filter(e => e.name.toLowerCase().indexOf(search) > -1);
     
     // Filter
-    const d = new Date();
-    console.log(d);
     switch(filter) {
         case 'all': { break; }
         case 'outstanding':

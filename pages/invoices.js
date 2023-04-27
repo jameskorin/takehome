@@ -8,14 +8,11 @@ export default function Invoices() {
     const [invoices, setInvoices] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         getInvoices();
     },[])
-
-    useEffect(() => {
-        console.log(invoices);
-    },[invoices])
 
     const getInvoices =async ()=> {
         setInvoices((await axios.get('https://takehome.api.bidsight.io/v2/invoices')).data);
@@ -25,13 +22,31 @@ export default function Invoices() {
         setInvoices(invoices.concat([invoice]));
     }
 
-
-    // Filter invoices
     let displayInvoices = invoices;
     
     // Search by name
-    if(search !== '') {
+    if(search !== '')
         displayInvoices = invoices.filter(e => e.name.toLowerCase().indexOf(search) > -1);
+    
+    // Filter
+    const d = new Date();
+    console.log(d);
+    switch(filter) {
+        case 'all': { break; }
+        case 'outstanding':
+        case 'paid':
+        case 'draft': {
+            displayInvoices = displayInvoices.filter(e => e.status === filter);
+            break;
+        }
+        case 'late': {
+            displayInvoices = displayInvoices.filter(e => 
+                e.status === 'outstanding' &&
+                (new Date(e.due_date) < d)
+            );
+            break;
+        }
+        default: { break; }
     }
 
     return <Outer>
@@ -43,7 +58,7 @@ export default function Invoices() {
         <TopRow>
             <input placeholder='🔍 Search'
             onChange={e => setSearch(e.target.value.trim().toLowerCase())}/>
-            <select>
+            <select onChange={e => setFilter(e.target.value.toLowerCase())}>
                 <option>All</option>
                 <option>Outstanding</option>
                 <option>Paid</option>

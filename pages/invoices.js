@@ -1,27 +1,67 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { TopRow } from '../styles/invoices'
+import { Outer, Table, TopRow } from '../styles/invoices'
+import CreateInvoice from '../components/createInvoice'
 
 export default function Invoices() {
 
     const [invoices, setInvoices] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         getInvoices();
     },[])
 
+    useEffect(() => {
+        console.log(invoices);
+    },[invoices])
+
     const getInvoices =async ()=> {
         setInvoices((await axios.get('https://takehome.api.bidsight.io/v2/invoices')).data);
     }
 
-    return <div>
+    const createInvoice =(invoice)=> {
+        setInvoices(invoices.concat([invoice]));
+    }
+
+
+    // Filter invoices
+    let displayInvoices = invoices;
+    
+    // Search by name
+    if(search !== '') {
+        displayInvoices = invoices.filter(e => e.name.toLowerCase().indexOf(search) > -1);
+    }
+
+    return <Outer>
         <TopRow>
             <h1>Invoices</h1>
-            <button>+ Create invoice</button>
+            <button onClick={() => setShowForm(!showForm)}>+ Create invoice</button>
         </TopRow>
-        <table>
+
+        <TopRow>
+            <input placeholder='🔍 Search'
+            onChange={e => setSearch(e.target.value.trim().toLowerCase())}/>
+            <select>
+                <option>All</option>
+                <option>Outstanding</option>
+                <option>Paid</option>
+                <option>Draft</option>
+                <option>Late</option>
+            </select>
+        </TopRow>
+
+        <Table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Due date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
             <tbody>
-            {invoices.map((item,index) => {
+            {displayInvoices.map((item,index) => {
                 return <tr>
                     <td>{item.name}</td>
                     <td>{item.due_date}</td>
@@ -29,6 +69,7 @@ export default function Invoices() {
                 </tr>
             })}
             </tbody>
-        </table>
-    </div>;
+        </Table>
+        <CreateInvoice createInvoice={createInvoice} visible={showForm}/>
+    </Outer>;
 }

@@ -77,3 +77,7 @@ export const Fetching = styled.div`
     font-weight: 500;
     color: #ACACAC;
 `;
+
+export const DueDateTH = styled.th`
+    cursor: pointer;
+`;

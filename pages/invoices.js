@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Outer, Table, TopRow, Fetching, Late } from '../styles/invoices'
+import { Outer, Table, TopRow, Fetching, Late, DueDateTH } from '../styles/invoices'
 import CreateInvoice from '../components/createInvoice'
 
 export default function Invoices() {
@@ -11,6 +11,7 @@ export default function Invoices() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [editing, setEditing] = useState(-1);
+    const [chronDirection, setChronDirection] = useState(1);
 
     useEffect(() => {
         getInvoices();
@@ -26,6 +27,7 @@ export default function Invoices() {
     }
 
     const createInvoice =(invoice)=> {
+        invoice.id = (invoices.length + 1).toString();
         setInvoices(invoices.concat([invoice]));
         setShowForm(false);
     }
@@ -47,10 +49,10 @@ export default function Invoices() {
 
     // Sort invoices chronologically
     // Surface invoices without due dates to the top of the list
-    let displayInvoices = invoices.sort((a,b) => 
-        a.due_date === "" ? (a.id > b.id ? -1:1) :(
+    let displayInvoices = invoices.filter(e => e.due_date === "").concat(
+        invoices.filter(e => e.due_date !== "").sort((a,b) => 
         (new Date(a.due_date)) > (new Date(b.due_date))
-    ? -1 : 1));
+    ? -chronDirection : chronDirection));
     
     // Search by name
     if(search !== '')
@@ -102,7 +104,9 @@ export default function Invoices() {
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Due date</th>
+                    <DueDateTH onClick={() => setChronDirection(-chronDirection)}>
+                        Due date {chronDirection > 0 ? '🔼':'🔽'}
+                    </DueDateTH>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -113,7 +117,13 @@ export default function Invoices() {
                     <td>{item.name}</td>
                     <td>{item.due_date}</td>
                     <td><div>{item.status} {late ? <Late>late</Late>:null}</div></td>
-                    <td><button onClick={() => setEditing(index)}>edit</button></td>
+                    <td>
+                        <button onClick={() => 
+                            setEditing(invoices.findIndex(e => e.id === item.id))
+                        }>
+                            edit
+                        </button>
+                    </td>
                 </tr>
             })}
             </tbody>

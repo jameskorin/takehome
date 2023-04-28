@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Outer } from '../styles/createInvoice'
+import { Outer, Backing } from '../styles/createInvoice'
 import _ from 'lodash'
 
 export default function CreateInvoice({
@@ -53,8 +53,9 @@ export default function CreateInvoice({
     }
 
     if(!visible) return null;
-    return <Outer>
-
+    return <>
+    <Backing onClick={cancel}/>
+    <Outer>
         <button onClick={cancel}>cancel</button>
 
         <h1>{editing ? 'Edit':'New'} Invoice</h1>
@@ -104,7 +105,7 @@ export default function CreateInvoice({
                     createInvoice(invoice);
             }}>{editing ? 'Save changes' : 'Create invoice'}</button>
         </div>
-    </Outer>;
+    </Outer></>;
 }
 
 function toMMDDYYYY(d) {

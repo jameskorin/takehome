@@ -53,7 +53,7 @@ export const Charge = styled.div`
     flex-direction: column;
     position: relative;
 
-    padding-bottom: 10px;
+    padding-bottom: 0px;
     margin-bottom: 10px;
     :not(:last-child) {
         border-bottom: 1px solid #ACACAC;

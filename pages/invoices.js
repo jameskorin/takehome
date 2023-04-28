@@ -116,12 +116,15 @@ export default function Invoices() {
                 return <tr key={`${item.name}_${index}`}>
                     <td>{item.name}</td>
                     <td>{item.due_date}</td>
-                    <td><div>{item.status} {late ? <Late>late</Late>:null}</div></td>
+                    <td><div>
+                        {item.status[0].toUpperCase()}{item.status.substring(1)}{late ? 
+                        <Late>Late</Late>:null}
+                    </div></td>
                     <td>
                         <button onClick={() => 
                             setEditing(invoices.findIndex(e => e.id === item.id))
                         }>
-                            edit
+                            Edit
                         </button>
                     </td>
                 </tr>

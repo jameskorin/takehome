@@ -66,14 +66,16 @@ export default function CreateInvoice({
     return <>
     <Backing onClick={cancel}/>
     <Outer>
-        <Cancel onClick={cancel}>cancel</Cancel>
+        <Cancel onClick={cancel}>Cancel</Cancel>
 
         <h1>{editing ? 'Edit':'New'} Invoice</h1>
 
         <div>
 
             <BasicInfo>
-                <Input value={invoice.name}
+
+                <label for="name">Invoice name</label>
+                <Input value={invoice.name} id="name"
                 onChange={e => setInvoice({...invoice, name: e.target.value})} 
                 placeholder='Name'/>
 
@@ -114,7 +116,7 @@ export default function CreateInvoice({
                         $<Input placeholder="100" type='number' value={value} 
                         onChange={e => updateCharge(index, {[key]:e.target.value.toString()})}/>
                     </div>
-                    <button onClick={() => deleteCharge(index)}>delete</button>
+                    <button onClick={() => deleteCharge(index)}>Delete</button>
                 </Charge>
             })}
             </div>

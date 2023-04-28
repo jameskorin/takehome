@@ -4,8 +4,24 @@ import _ from 'lodash'
 
 export default function CreateInvoice({
     visible,
-    createInvoice
+    createInvoice,
+    updateInvoice,
+    editing,
+    existingInvoice,
+    cancel
 }) {
+
+    useEffect(() => {
+        if(editing)
+            setInvoice(existingInvoice);
+        else
+            setInvoice({
+                name: '',
+                due_date: '',
+                status: '',
+                charges: [{"": ""}]
+            });
+    },[visible])
 
     const [invoice, setInvoice] = useState({
         name: '',
@@ -13,10 +29,6 @@ export default function CreateInvoice({
         status: '',
         charges: [{"": ""}]
     });
-
-    useEffect(() => {
-        console.log(invoice.charges);
-    },[invoice])
 
     const updateCharge =(index, charge)=> {
         setInvoice(prevState => {
@@ -43,21 +55,26 @@ export default function CreateInvoice({
     if(!visible) return null;
     return <Outer>
 
-        <h1>New Invoice</h1>
+        <button onClick={cancel}>cancel</button>
 
-        <form onSubmit={e => {
-            e.preventDefault();
-            createInvoice(invoice)
-        }}>
-            <input onChange={e => setInvoice({...invoice, name: e.target.value})} 
+        <h1>{editing ? 'Edit':'New'} Invoice</h1>
+
+        <div>
+            <input value={invoice.name}
+            onChange={e => setInvoice({...invoice, name: e.target.value})} 
             placeholder='Name'/>
-            <select onChange={e => setInvoice({...invoice, status: e.target.value.toLowerCase()})}>
-                <option disabled selected>Status</option>
-                <option>Draft</option>
-                <option>Paid</option>
-                <option>Outstanding</option>
+            <select value={invoice.status}
+            onChange={e => setInvoice({...invoice, status: e.target.value.toLowerCase()})}>
+                <option disabled selected={!editing}>Status</option>
+                <option value='draft'>Draft</option>
+                <option value='paid'>Paid</option>
+                <option value='outstanding'>Outstanding</option>
             </select>
-            <input onChange={e => setInvoice({...invoice, due_date: e.target.value})} 
+            <input value={toYYYYMMDD(invoice.due_date)}
+            onChange={e => setInvoice({
+                ...invoice, 
+                due_date: toMMDDYYYY(e.target.value)
+            })} 
             placeholder='Due date' type='date'/>
 
             <div>
@@ -80,7 +97,21 @@ export default function CreateInvoice({
                 </div>
             })}
 
-            <button type='submit'>Create</button>
-        </form>
+            <button onClick={() => {
+                if(editing)
+                    updateInvoice(invoice);
+                else
+                    createInvoice(invoice);
+            }}>{editing ? 'Save changes' : 'Create invoice'}</button>
+        </div>
     </Outer>;
+}
+
+function toMMDDYYYY(d) {
+    const arr = d.split('-');
+    return `${arr[1]}/${arr[2]}/${arr[0]}`;
+}
+function toYYYYMMDD(d) {
+    const arr = d.split('/');
+    return `${arr[2]}-${arr[0]}-${arr[1]}`;
 }

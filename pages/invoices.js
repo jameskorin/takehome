@@ -10,10 +10,15 @@ export default function Invoices() {
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const [editing, setEditing] = useState(-1);
 
     useEffect(() => {
         getInvoices();
     },[])
+
+    useEffect(() => {
+        if(editing > -1) setShowForm(true);
+    },[editing])
 
     const getInvoices =async ()=> {
         setInvoices((await axios.get('https://takehome.api.bidsight.io/v2/invoices')).data);
@@ -22,6 +27,20 @@ export default function Invoices() {
 
     const createInvoice =(invoice)=> {
         setInvoices(invoices.concat([invoice]));
+        setShowForm(false);
+    }
+
+    const updateInvoice =(invoice)=> {
+        let i = _.cloneDeep(invoices);
+        i[editing] = invoice;
+        setInvoices(i)
+        setEditing(-1);
+        setShowForm(false);
+    }
+
+    const cancel =()=> {
+        setEditing(-1);
+        setShowForm(false);
     }
 
     const d = new Date();
@@ -90,10 +109,11 @@ export default function Invoices() {
             <tbody>
             {displayInvoices.map((item,index) => {
                 const late = item.status === 'outstanding' && (new Date(item.due_date) < d);
-                return <tr>
+                return <tr key={`${item.name}_${index}`}>
                     <td>{item.name}</td>
                     <td>{item.due_date}</td>
                     <td><div>{item.status} {late ? <Late>late</Late>:null}</div></td>
+                    <td><button onClick={() => setEditing(index)}>edit</button></td>
                 </tr>
             })}
             </tbody>
@@ -104,6 +124,11 @@ export default function Invoices() {
             No invoices
         </Fetching>}
 
-        <CreateInvoice createInvoice={createInvoice} visible={showForm}/>
+        <CreateInvoice editing={editing > -1} 
+        existingInvoice={editing > -1 ? invoices[editing] : null}
+        updateInvoice={updateInvoice}
+        createInvoice={createInvoice} 
+        visible={showForm}
+        cancel={cancel}/>
     </Outer>;
 }

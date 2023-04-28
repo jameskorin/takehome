@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Outer, Table, TopRow } from '../styles/invoices'
+import { Outer, Table, TopRow, Fetching, Late } from '../styles/invoices'
 import CreateInvoice from '../components/createInvoice'
 
 export default function Invoices() {
 
+    const [fetched, setFetched] = useState(false);
     const [invoices, setInvoices] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
@@ -14,12 +15,9 @@ export default function Invoices() {
         getInvoices();
     },[])
 
-    useEffect(() => {
-        console.log(invoices.filter(e => e.status === 'draft'));
-    },[invoices])
-
     const getInvoices =async ()=> {
         setInvoices((await axios.get('https://takehome.api.bidsight.io/v2/invoices')).data);
+        setFetched(true);
     }
 
     const createInvoice =(invoice)=> {
@@ -27,8 +25,11 @@ export default function Invoices() {
     }
 
     const d = new Date();
+
+    // Sort invoices chronologically
+    // Surface invoices without due dates to the top of the list
     let displayInvoices = invoices.sort((a,b) => 
-        a.due_date === "" ? -1 :(
+        a.due_date === "" ? (a.id > b.id ? -1:1) :(
         (new Date(a.due_date)) > (new Date(b.due_date))
     ? -1 : 1));
     
@@ -58,7 +59,7 @@ export default function Invoices() {
     return <Outer>
         <TopRow>
             <h1>Invoices</h1>
-            <button onClick={() => setShowForm(!showForm)}>+ Create invoice</button>
+            <button onClick={() => setShowForm(true)}>+ Create invoice</button>
         </TopRow>
 
         <TopRow>
@@ -73,6 +74,11 @@ export default function Invoices() {
             </select>
         </TopRow>
 
+        {!fetched && <Fetching>
+            Fetching invoices...
+        </Fetching>}
+
+        {fetched &&
         <Table>
             <thead>
                 <tr>
@@ -83,14 +89,21 @@ export default function Invoices() {
             </thead>
             <tbody>
             {displayInvoices.map((item,index) => {
+                const late = item.status === 'outstanding' && (new Date(item.due_date) < d);
                 return <tr>
                     <td>{item.name}</td>
                     <td>{item.due_date}</td>
-                    <td>{item.status}</td>
+                    <td><div>{item.status} {late ? <Late>late</Late>:null}</div></td>
                 </tr>
             })}
             </tbody>
-        </Table>
+        </Table>}
+
+        {fetched && displayInvoices.length === 0 &&
+        <Fetching>
+            No invoices
+        </Fetching>}
+
         <CreateInvoice createInvoice={createInvoice} visible={showForm}/>
     </Outer>;
 }

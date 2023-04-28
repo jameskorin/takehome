@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { Outer, Backing } from '../styles/createInvoice'
+import { 
+    Outer, 
+    Backing, 
+    ChargesHeader, 
+    Input, 
+    Charge, 
+    Confirm, 
+    Cancel,
+    BasicInfo,
+    Select
+} from '../styles/createInvoice'
 import _ from 'lodash'
 
 export default function CreateInvoice({
@@ -56,54 +66,65 @@ export default function CreateInvoice({
     return <>
     <Backing onClick={cancel}/>
     <Outer>
-        <button onClick={cancel}>cancel</button>
+        <Cancel onClick={cancel}>cancel</Cancel>
 
         <h1>{editing ? 'Edit':'New'} Invoice</h1>
 
         <div>
-            <input value={invoice.name}
-            onChange={e => setInvoice({...invoice, name: e.target.value})} 
-            placeholder='Name'/>
-            <select value={invoice.status}
-            onChange={e => setInvoice({...invoice, status: e.target.value.toLowerCase()})}>
-                <option disabled selected={!editing}>Status</option>
-                <option value='draft'>Draft</option>
-                <option value='paid'>Paid</option>
-                <option value='outstanding'>Outstanding</option>
-            </select>
-            <input value={toYYYYMMDD(invoice.due_date)}
-            onChange={e => setInvoice({
-                ...invoice, 
-                due_date: toMMDDYYYY(e.target.value)
-            })} 
-            placeholder='Due date' type='date'/>
 
-            <div>
+            <BasicInfo>
+                <Input value={invoice.name}
+                onChange={e => setInvoice({...invoice, name: e.target.value})} 
+                placeholder='Name'/>
+
+                <label for="status">Status</label>
+                <Select value={invoice.status} id="status"
+                onChange={e => setInvoice({...invoice, status: e.target.value.toLowerCase()})}>
+                    <option disabled defaultValue={!editing}>Status</option>
+                    <option value='draft'>Draft</option>
+                    <option value='paid'>Paid</option>
+                    <option value='outstanding'>Outstanding</option>
+                </Select>
+
+                <label for="due-date">Due date</label>
+                <Input id="due-date" value={toYYYYMMDD(invoice.due_date)}
+                onChange={e => setInvoice({
+                    ...invoice, 
+                    due_date: toMMDDYYYY(e.target.value)
+                })} 
+                placeholder='Due date' type='date'/>
+            </BasicInfo>
+
+            <ChargesHeader>
                 <h2>Charges</h2>
                 <button onClick={() => setInvoice({
                 ...invoice, 
                 charges: invoice.charges.concat([{"":""}])})}>
                     + Add charge
                 </button>
-            </div>
+            </ChargesHeader>
+            <div>
             {invoice.charges.map((item,index) => {
                 const key = Object.keys(item)[0];
                 const value = parseInt(Object.values(item)[0]);
-                return <div key={`key_${index}`}>
-                    <input placeholder='Name' value={key}
+                return <Charge key={`key_${index}`}>
+                    <Input placeholder='Name' value={key}
                     onChange={e => updateCharge(index, {[e.target.value]:value})}/>
-                    $<input placeholder="100" type='number' value={value} 
-                    onChange={e => updateCharge(index, {[key]:e.target.value.toString()})}/>
-                    <button onClick={() => deleteCharge(index)}>Delete</button>
-                </div>
+                    <div>
+                        $<Input placeholder="100" type='number' value={value} 
+                        onChange={e => updateCharge(index, {[key]:e.target.value.toString()})}/>
+                    </div>
+                    <button onClick={() => deleteCharge(index)}>delete</button>
+                </Charge>
             })}
+            </div>
 
-            <button onClick={() => {
+            <Confirm onClick={() => {
                 if(editing)
                     updateInvoice(invoice);
                 else
                     createInvoice(invoice);
-            }}>{editing ? 'Save changes' : 'Create invoice'}</button>
+            }}>{editing ? 'Save changes' : 'Create invoice'}</Confirm>
         </div>
     </Outer></>;
 }

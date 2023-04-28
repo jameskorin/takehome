@@ -45,6 +45,12 @@ export const Table = styled.table`
             display: flex;
             justify-content: flex-end;
         }
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            text-decoration: underline;
+        }
     }
 
     th {
